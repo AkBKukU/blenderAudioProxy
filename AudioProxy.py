@@ -7,6 +7,7 @@ import bpy
 import os
 import ffmpy
 import sys
+from bpy.app.handlers import persistent
 
 
 class AudioProxyProperties(bpy.types.PropertyGroup):
