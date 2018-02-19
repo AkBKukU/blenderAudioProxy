@@ -13,7 +13,7 @@ go through all audio clips in the scene and create smaller separate audio files.
 
 By default, these are stored in the `BL_proxy` project proxy directory under a
 new `audio` folder as an ogg. Both the path of the proxies and the output format
-are configurable in the plugin settings.
+are configurable in the render panel.
 
 ## Usage
 This plugin adds an option to the `Strip` menu in the VSE for "Audio Proxy".
