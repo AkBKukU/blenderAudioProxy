@@ -117,6 +117,10 @@ def menu_func(self, context):
     self.layout.menu(AudioProxySubMenu.bl_idname)
     self.layout.separator()
 
+@persistent
+def use_orig(self):
+    bpy.ops.audio_proxy.orig()
+
 def register():
     bpy.utils.register_class(AudioProxyUseOrig)
     bpy.utils.register_class(AudioProxyUseProxy)
@@ -132,6 +136,8 @@ def register():
         bpy.props.PointerProperty(type=AudioProxyProperties)
     bpy.types.SoundSequence.audio_proxy = \
         bpy.props.PointerProperty(type=AudioProxySequenceProperties)
+
+    bpy.app.handlers.render_pre.append(use_orig)
 
 
 def unregister():
