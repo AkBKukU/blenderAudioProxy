@@ -65,6 +65,7 @@ class AudioProxyCreate(bpy.types.Operator):
     bl_idname = "audio_proxy.create"
     bl_label = "Create Audio Proxies"
     bl_options = {'REGISTER'}
+    user_preferences = bpy.context.user_preferences
 
     def execute(self, context):
         scene = context.scene
