@@ -10,32 +10,25 @@ import sys
 from bpy.app.handlers import persistent
 
 
-class AudioProxyProperties(bpy.types.PropertyGroup):
+class AudioProxyAddonPreferences(bpy.types.AddonPreferences):
+    '''Preferences to store proxy file path and format'''
+    bl_idname = __name__
+
     output_path = bpy.props.StringProperty(name="Path", subtype="FILE_PATH", default="//BL_proxy/audio")
     output_format = bpy.props.StringProperty(name="Format", default="ogg")
+
+    def draw(self, context):
+        layout = self.layout
+
+        col = layout.column()
+        col.prop(self,"output_path")
+        col.prop(self,"output_format")
 
 
 class AudioProxySequenceProperties(bpy.types.PropertyGroup):
     path_original = bpy.props.StringProperty(name="Original Path", subtype="FILE_PATH")
     path_proxy = bpy.props.StringProperty(name="Proxy Path", subtype="FILE_PATH")
 
-
-class AudioProxyPanel(bpy.types.Panel):
-    bl_idname = "RENDER_PT_audio_proxy"
-    bl_label = "Audio Proxy"
-    bl_space_type = 'PROPERTIES'
-    bl_region_type = 'WINDOW'
-    bl_context = "render"
-
-    def draw(self, context):
-        layout = self.layout
-
-        scene = context.scene
-        self.layout.label(text="Output Settings:")
-
-        col = layout.column()
-        col.prop(scene.audio_proxy,"output_path")
-        col.prop(scene.audio_proxy,"output_format")
 
 class AudioProxyUseOrig(bpy.types.Operator):
     bl_idname = "audio_proxy.orig"
@@ -50,6 +43,7 @@ class AudioProxyUseOrig(bpy.types.Operator):
                 s.sound.filepath = s.audio_proxy.path_original
 
         return {'FINISHED'}
+
 
 class AudioProxyUseProxy(bpy.types.Operator):
     bl_idname = "audio_proxy.proxy"
@@ -74,12 +68,13 @@ class AudioProxyCreate(bpy.types.Operator):
 
     def execute(self, context):
         scene = context.scene
+        addon_prefs = user_preferences.addons[__name__].preferences
 
         for s in scene.sequence_editor.sequences:
             if s.type == 'SOUND':
                 path_old=os.path.realpath(bpy.path.abspath(s.sound.filepath))
-                path_new=bpy.path.relpath(os.path.join(scene.audio_proxy.output_path,
-                    os.path.basename(s.sound.filepath) + "."+scene.audio_proxy.output_format))
+                path_new=bpy.path.relpath(os.path.join(addon_prefs.output_path,
+                    os.path.basename(s.sound.filepath) + "."+addon_prefs.output_format))
 
                 s.audio_proxy.path_original=s.sound.filepath
                 s.audio_proxy.path_proxy=path_new
@@ -123,18 +118,15 @@ def use_orig(self):
     bpy.ops.audio_proxy.orig()
 
 def register():
+    bpy.utils.register_class(AudioProxyAddonPreferences)
     bpy.utils.register_class(AudioProxyUseOrig)
     bpy.utils.register_class(AudioProxyUseProxy)
     bpy.utils.register_class(AudioProxyCreate)
-    bpy.utils.register_class(AudioProxyPanel)
-    bpy.utils.register_class(AudioProxyProperties)
     bpy.utils.register_class(AudioProxySequenceProperties)
     bpy.utils.register_class(AudioProxySubMenu)
 
     bpy.types.SEQUENCER_MT_strip.prepend(menu_func)
 
-    bpy.types.Scene.audio_proxy = \
-        bpy.props.PointerProperty(type=AudioProxyProperties)
     bpy.types.SoundSequence.audio_proxy = \
         bpy.props.PointerProperty(type=AudioProxySequenceProperties)
 
@@ -142,17 +134,15 @@ def register():
 
 
 def unregister():
+    bpy.utils.unregister_class(AudioProxyAddonPreferences)
     bpy.utils.unregister_class(AudioProxyUseOrig)
     bpy.utils.unregister_class(AudioProxyUseProxy)
     bpy.utils.unregister_class(AudioProxyCreate)
-    bpy.utils.unregister_class(AudioProxyPanel)
-    bpy.utils.unregister_class(AudioProxyProperties)
     bpy.utils.unregister_class(AudioProxySequenceProperties)
     bpy.utils.unregister_class(AudioProxySubMenu)
 
     bpy.types.SEQUENCER_MT_strip.remove(menu_func)
 
-    del bpy.types.Scene.audio_proxy
     del bpy.types.SoundSequence.audio_proxy
 
 
